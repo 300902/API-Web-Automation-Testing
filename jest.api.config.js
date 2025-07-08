@@ -17,5 +17,7 @@ module.exports = {
       }
     ]
   ],
-  testTimeout: 30000
+  testTimeout: 30000,
+  passWithNoTests: true,
+  setupFilesAfterEnv: []
 };
