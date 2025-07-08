@@ -1,0 +1,30 @@
+# ZAP Rules Configuration
+# Format: action	url_regex	parameter	strength
+# Actions: IGNORE, INFO, LOW, MEDIUM, HIGH, FAIL
+
+# Ignore rules for test environment
+IGNORE	.*localhost.*	.*	.*
+IGNORE	.*127\.0\.0\.1.*	.*	.*
+IGNORE	.*test.*	.*	.*
+
+# Informational findings
+INFO	.*	X-Frame-Options	.*
+INFO	.*	X-Content-Type-Options	.*
+
+# Low priority findings
+LOW	.*	Content-Type	.*
+LOW	.*	Cache-Control	.*
+
+# Medium priority findings  
+MEDIUM	.*	SQL_Injection	.*
+MEDIUM	.*	XSS	.*
+
+# High priority findings
+HIGH	.*	Authentication	.*
+HIGH	.*	Authorization	.*
+HIGH	.*	Sensitive_Data	.*
+
+# Critical findings that should fail the build
+FAIL	.*	Remote_Code_Execution	.*
+FAIL	.*	Command_Injection	.*
+FAIL	.*	Path_Traversal	.*

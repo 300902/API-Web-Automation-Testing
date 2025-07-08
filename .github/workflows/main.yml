@@ -1,0 +1,218 @@
+name: API and Web UI Automation Pipeline
+
+# Trigger pipeline pada push dan pull request
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # Job untuk API Testing
+  api-testing:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm install
+        
+    - name: Run API Tests
+      run: |
+        npm run test:api
+        
+    - name: Generate API Test Report
+      run: |
+        npm run test:api:report
+        
+    # Upload API test artifacts
+    - name: Upload API Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: api-test-results
+        path: |
+          test-results/
+          reports/api/
+        retention-days: 30
+        
+  # Job untuk Web UI Testing
+  web-ui-testing:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm install
+        
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+      
+    - name: Run Web UI Tests
+      run: |
+        npm run test:ui
+        
+    - name: Generate UI Test Report
+      run: |
+        npm run test:ui:report
+        
+    # Upload UI test artifacts
+    - name: Upload UI Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ui-test-results
+        path: |
+          playwright-report/
+          test-results/
+          reports/ui/
+        retention-days: 30
+        
+    # Upload screenshots and videos on failure
+    - name: Upload Test Screenshots
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: ui-test-screenshots
+        path: test-results/
+        retention-days: 30
+        
+  # Job untuk Security Testing (OWASP ZAP)
+  security-testing:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run OWASP ZAP Full Scan
+      uses: zaproxy/action-full-scan@v0.8.0
+      with:
+        target: 'https://your-api-endpoint.com'
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a'
+        
+    - name: Upload Security Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-test-results
+        path: report_html.html
+        retention-days: 30
+        
+  # Job untuk Performance Testing
+  performance-testing:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Run Performance Tests
+      run: |
+        npm run test:performance
+        
+    - name: Upload Performance Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-test-results
+        path: |
+          performance-reports/
+          load-test-results/
+        retention-days: 30
+        
+  # Job untuk generate consolidated report
+  generate-report:
+    runs-on: ubuntu-latest
+    needs: [api-testing, web-ui-testing, security-testing, performance-testing]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Generate Consolidated Report
+      run: |
+        node scripts/generate-consolidated-report.js
+        
+    - name: Upload Consolidated Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: consolidated-test-report
+        path: |
+          consolidated-report/
+          summary-report.html
+        retention-days: 30
+        
+    # Optional: Deploy report to GitHub Pages
+    - name: Deploy Report to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./consolidated-report
+        
+  # Job untuk Docker build dan push (optional)
+  docker-build:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: |
+          your-username/automation-tests:latest
+          your-username/automation-tests:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
