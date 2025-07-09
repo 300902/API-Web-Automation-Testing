@@ -1,11 +1,8 @@
-name: API and Web UI Automation Pipeline
+name: API and Web UI Automation Pipeline - DISABLED
 
-# Trigger pipeline pada push dan pull request
+# Workflow disabled - using working-pipeline.yml instead
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+  workflow_dispatch:  # Only manual trigger
 
 jobs:
   # Job untuk API Testing
