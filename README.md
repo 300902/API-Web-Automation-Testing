@@ -156,16 +156,33 @@ Pipeline akan mengupload artifacts berikut:
 - `performance-test-results`: Performance test reports
 - `consolidated-test-report`: Combined test report
 
-## 🐳 Docker Usage
+## 🐳 Docker Support
 
-### Build Docker Image
+### Container Registry
+Project menggunakan **GitHub Container Registry (GHCR)** untuk Docker images:
+- Registry: `ghcr.io`
+- Image: `ghcr.io/<username>/<repo>/automation-tests`
+- Authentication: Built-in GitHub tokens (tidak perlu konfigurasi tambahan)
+
+### Running with Docker
 ```bash
-docker build -t automation-tests .
+# Pull image
+docker pull ghcr.io/<username>/<repo>/automation-tests:latest
+
+# Run tests in container
+docker run --rm ghcr.io/<username>/<repo>/automation-tests:latest
+
+# Run with custom environment
+docker run --rm -e API_BASE_URL=https://api.example.com ghcr.io/<username>/<repo>/automation-tests:latest
 ```
 
-### Run Tests in Container
+### Build Docker Image Locally
 ```bash
-docker run --rm -v $(pwd)/test-results:/app/test-results automation-tests
+# Build image
+docker build -t automation-tests .
+
+# Run container
+docker run -p 3000:3000 automation-tests
 ```
 
 ## 📝 Writing Tests
