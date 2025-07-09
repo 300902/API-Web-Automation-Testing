@@ -1,11 +1,14 @@
-name: API and Web UI Automation Pipeline - DISABLED
+name: API and Web UI Automation Pipeline
 
-# Workflow disabled - using working-pipeline.yml instead
+# Trigger pipeline pada push dan pull request
 on:
-  workflow_dispatch:  # Only manual trigger
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
-  # Job untuk API Testing
+  # Job 1: API Testing
   api-testing:
     runs-on: ubuntu-latest
     
@@ -20,16 +23,13 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: |
-        npm install
+      run: npm ci
         
     - name: Run API Tests
-      run: |
-        npm run test:api
+      run: npm run test:api
         
     - name: Generate API Test Report
-      run: |
-        npm run test:api:report
+      run: npm run test:api:report
         
     # Upload API test artifacts
     - name: Upload API Test Results
@@ -41,8 +41,8 @@ jobs:
           test-results/
           reports/api/
         retention-days: 30
-        
-  # Job untuk Web UI Testing
+
+  # Job 2: Web UI Testing
   web-ui-testing:
     runs-on: ubuntu-latest
     
@@ -57,19 +57,16 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: |
-        npm install
+      run: npm ci
         
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
       
     - name: Run Web UI Tests
-      run: |
-        npm run test:ui
+      run: npm run test:ui
         
     - name: Generate UI Test Report
-      run: |
-        npm run test:ui:report
+      run: npm run test:ui:report
         
     # Upload UI test artifacts
     - name: Upload UI Test Results
@@ -92,7 +89,7 @@ jobs:
         path: test-results/
         retention-days: 30
         
-  # Job untuk Security Testing (OWASP ZAP)
+  # Job 3: Security Testing (OWASP ZAP)
   security-testing:
     runs-on: ubuntu-latest
     
@@ -103,7 +100,7 @@ jobs:
     - name: Run OWASP ZAP Full Scan
       uses: zaproxy/action-full-scan@v0.8.0
       with:
-        target: 'https://your-api-endpoint.com'
+        target: 'https://httpbin.org'
         rules_file_name: '.zap/rules.tsv'
         cmd_options: '-a'
         
@@ -115,7 +112,7 @@ jobs:
         path: report_html.html
         retention-days: 30
         
-  # Job untuk Performance Testing
+  # Job 4: Performance Testing
   performance-testing:
     runs-on: ubuntu-latest
     
@@ -130,11 +127,10 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: npm install
+      run: npm ci
       
     - name: Run Performance Tests
-      run: |
-        npm run test:performance
+      run: npm run test:performance
         
     - name: Upload Performance Test Results
       uses: actions/upload-artifact@v4
@@ -146,7 +142,7 @@ jobs:
           load-test-results/
         retention-days: 30
         
-  # Job untuk generate consolidated report
+  # Job 5: Generate Consolidated Report
   generate-report:
     runs-on: ubuntu-latest
     needs: [api-testing, web-ui-testing, security-testing, performance-testing]
@@ -165,8 +161,7 @@ jobs:
         node-version: '18'
         
     - name: Generate Consolidated Report
-      run: |
-        node scripts/generate-consolidated-report.js
+      run: node scripts/generate-consolidated-report.js
         
     - name: Upload Consolidated Report
       uses: actions/upload-artifact@v4
@@ -185,7 +180,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./consolidated-report
         
-  # Job untuk Docker build dan push (optional)
+  # Job 6: Docker Build and Push
   docker-build:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
