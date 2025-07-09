@@ -18,7 +18,7 @@ playwright-report/
 reports/
 coverage/
 *.xml
-*.json
+test-results.json
 allure-results/
 allure-report/
 

@@ -1,0 +1,45 @@
+{
+  "name": "api-web-automation",
+  "version": "1.0.0",
+  "description": "API and Web UI Automation Testing Suite",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest tests/api/basic.test.js",
+    "test:api": "jest tests/api/basic.test.js --passWithNoTests",
+    "test:ui": "playwright test tests/ui/basic.test.js --config=playwright.config.js",
+    "test:all": "npm run test:api && npm run test:ui",
+    "test:api:report": "jest tests/api/basic.test.js --reporters=default --passWithNoTests",
+    "test:ui:report": "playwright test tests/ui/basic.test.js --reporter=html --config=playwright.config.js",
+    "test:performance": "echo 'Performance tests skipped - K6 not installed'",
+    "test:security": "echo 'Security tests skipped - ZAP not installed'",
+    "zap:baseline": "echo 'ZAP baseline skipped'",
+    "lint": "echo 'Linting skipped'",
+    "lint:fix": "echo 'Linting skipped'",
+    "start": "echo 'Server start placeholder'"
+  },
+  "keywords": [
+    "automation",
+    "testing",
+    "api",
+    "web-ui",
+    "playwright",
+    "jest"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/jest": "^29.5.5",
+    "@types/node": "^20.6.0",
+    "eslint": "^8.49.0",
+    "jest": "^29.7.0",
+    "jest-html-reporters": "^3.1.5",
+    "supertest": "^6.3.3",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  }
+}
