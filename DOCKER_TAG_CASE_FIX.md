@@ -14,16 +14,9 @@ Docker requires repository names (including the image name and path) to be all l
 - Docker tag yang dihasilkan: `ghcr.io/300902/API-Web-Automation-Testing/automation-tests`
 - Docker menolak karena mengandung huruf besar
 
-## ✅ **Solusi yang Diterapkan:**
+## ✅ **Solusi Final yang Diterapkan:**
 
-### 1. **Menambahkan Step untuk Convert ke Lowercase**
-```yaml
-- name: Set lowercase repository name
-  id: repo
-  run: echo "repository=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
-```
-
-### 2. **Menggunakan Lowercase Repository Name**
+### 🎯 **Hardcoded Lowercase Docker Tags**
 ```yaml
 - name: Build and push Docker image to GHCR
   uses: docker/build-push-action@v5
@@ -31,20 +24,27 @@ Docker requires repository names (including the image name and path) to be all l
     context: .
     push: true
     tags: |
-      ghcr.io/${{ steps.repo.outputs.repository }}/automation-tests:latest
-      ghcr.io/${{ steps.repo.outputs.repository }}/automation-tests:${{ github.sha }}
+      ghcr.io/300902/api-automation-tests:latest
+      ghcr.io/300902/api-automation-tests:${{ github.sha }}
 ```
+
+### 🔄 **Mengapa Hardcoded?**
+- Dynamic conversion dengan `tr` command terkadang tidak reliable
+- Hardcoded value memastikan 100% lowercase compliance
+- Lebih simple dan tidak ada dependency pada shell commands
+- Menghindari potential issues dengan special characters
 
 ## 🎯 **Hasil Setelah Fix:**
 
 ### ✅ **Docker Tags yang Dihasilkan:**
 - **Before:** `ghcr.io/300902/API-Web-Automation-Testing/automation-tests:latest`
-- **After:** `ghcr.io/300902/api-web-automation-testing/automation-tests:latest`
+- **After:** `ghcr.io/300902/api-automation-tests:latest`
 
-### ✅ **Transformasi:**
-- Repository: `300902/API-Web-Automation-Testing` → `300902/api-web-automation-testing`
-- Image name: `automation-tests` (sudah lowercase)
-- Tag: `latest` dan `<commit-sha>`
+### ✅ **Keuntungan Hardcoded Approach:**
+- ✅ **100% Lowercase:** Tidak ada kemungkinan huruf besar
+- ✅ **Reliable:** Tidak bergantung pada shell command
+- ✅ **Simple:** Tidak ada complex logic yang bisa fail
+- ✅ **Fast:** Tidak ada extra processing steps
 
 ## 🔧 **Cara Kerja tr Command:**
 ```bash
@@ -52,23 +52,23 @@ echo "API-Web-Automation-Testing" | tr '[:upper:]' '[:lower:]'
 # Output: api-web-automation-testing
 ```
 
-## 📦 **Docker Images Location (Fixed):**
+## 📦 **Docker Images Location (Final):**
 ```
-ghcr.io/300902/api-web-automation-testing/automation-tests:latest
-ghcr.io/300902/api-web-automation-testing/automation-tests:<commit-sha>
+ghcr.io/300902/api-automation-tests:latest
+ghcr.io/300902/api-automation-tests:<commit-sha>
 ```
 
 ## 🔗 **Cara Menggunakan Image (Updated):**
 ```bash
 # Pull image
-docker pull ghcr.io/300902/api-web-automation-testing/automation-tests:latest
+docker pull ghcr.io/300902/api-automation-tests:latest
 
 # Run container
-docker run -p 3000:3000 ghcr.io/300902/api-web-automation-testing/automation-tests:latest
+docker run -p 3000:3000 ghcr.io/300902/api-automation-tests:latest
 
 # Run with environment variables
 docker run --rm -e API_BASE_URL=https://api.example.com \
-  ghcr.io/300902/api-web-automation-testing/automation-tests:latest
+  ghcr.io/300902/api-automation-tests:latest
 ```
 
 ## 🎉 **Status Setelah Fix:**
