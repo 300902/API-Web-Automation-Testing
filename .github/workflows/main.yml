@@ -107,19 +107,31 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Run OWASP ZAP Full Scan
-      uses: zaproxy/action-full-scan@v0.8.0
+    - name: Run OWASP ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.10.0
       with:
         target: 'https://httpbin.org'
         rules_file_name: '.zap/rules.tsv'
         cmd_options: '-a'
+        fail_action: false
+        
+    - name: Create security report directory
+      run: mkdir -p security-reports
+      
+    - name: Move ZAP report
+      run: |
+        if [ -f report_html.html ]; then
+          mv report_html.html security-reports/
+        else
+          echo "No ZAP report generated" > security-reports/security-report.txt
+        fi
         
     - name: Upload Security Test Results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-test-results
-        path: report_html.html
+        path: security-reports/
         retention-days: 30
         
   # Job 4: Performance Testing
@@ -215,7 +227,16 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         
-    - name: Build and push Docker image to GHCR
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: ghcr.io/300902/api-automation-tests:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .

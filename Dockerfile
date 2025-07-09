@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (including devDependencies for testing)
+RUN npm ci
 
 # Install Playwright browsers
 RUN npx playwright install --with-deps
@@ -20,10 +20,10 @@ COPY . .
 RUN mkdir -p test-results reports
 
 # Set environment variables
-ENV NODE_ENV=production
+ENV NODE_ENV=test
 
 # Expose port (if running a web server)
 EXPOSE 3000
 
 # Default command
-CMD ["npm", "test"]
+CMD ["npm", "run", "test:api"]
