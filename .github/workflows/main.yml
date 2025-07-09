@@ -200,23 +200,13 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         
-    - name: Set lowercase repository name
-      id: repo
-      run: |
-        REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-        OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        echo "repository=${REPO_LOWER}" >> $GITHUB_OUTPUT
-        echo "owner=${OWNER_LOWER}" >> $GITHUB_OUTPUT
-        echo "Repository: ${REPO_LOWER}"
-        echo "Owner: ${OWNER_LOWER}"
-      
     - name: Build and push Docker image to GHCR
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
         tags: |
-          ghcr.io/${{ steps.repo.outputs.owner }}/api-automation-tests:latest
-          ghcr.io/${{ steps.repo.outputs.owner }}/api-automation-tests:${{ github.sha }}
+          ghcr.io/300902/api-automation-tests:latest
+          ghcr.io/300902/api-automation-tests:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
